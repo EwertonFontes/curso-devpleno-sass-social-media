@@ -5,7 +5,7 @@ import Seo from "components/Seo";
 export default function Home() {
   return (
     <div>
-      <Seo />
+      <Seo title='Social Media Belt' description='alguma coisa'/>
       <main>
         <h1 className={'font-bold text-3xl'}>Welcome to NEXTJS</h1>
 
