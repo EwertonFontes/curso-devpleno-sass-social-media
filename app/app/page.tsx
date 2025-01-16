@@ -1,12 +1,11 @@
+import Heading1 from "components/Heading1"
+import Heading2 from "components/Heading2"
+
 const AppHome = () => {
   return (
     <>
-    <h1 className="text-4xl font-semibold text-gray-800 dark:text-white">
-              Good afternoom, Charlie
-            </h1>
-            <h2 className="text-gray-400 text-md">
-              Here's what's happening with your ambassador account today.
-            </h2>
+            <Heading1>Seja bem-vindo!</Heading1>
+            <Heading2>Gerenciador de Links</Heading2>
             <div className="flex flex-col items-center w-full my-6 space-y-4 md:space-x-4 md:space-y-0 md:flex-row">
               <div className="w-full md:w-6/12">
                 <div className="relative w-full overflow-hidden bg-white shadow-lg dark:bg-gray-700">
