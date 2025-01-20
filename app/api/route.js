@@ -1,9 +1,7 @@
-import { PrismaClient } from '@prisma/client'
 import { NextResponse } from "next/server"
+import { prisma } from "lib/prisma"
 
-const prisma = new PrismaClient()
- 
 export async function GET(req){
-  const accounts = await prisma.account.findMany()
-  return NextResponse.json(accounts, { status: 200  })
+  const tenants = await prisma.tenant.findMany()
+  return NextResponse.json(tenants, { status: 200  })
 } 

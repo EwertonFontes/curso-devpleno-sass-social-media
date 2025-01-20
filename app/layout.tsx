@@ -6,6 +6,7 @@ import LayoutApp from "components/Layout/LayoutApp";
 import LayoutPublic from "components/Layout/LayoutPublic";
 import LayoutTenant from "components/Layout/LayoutTenant";
 import { usePathname } from 'next/navigation'
+import { AuthProvider } from "components/Providets";
 
 export default function RootLayout({
   children,
@@ -25,9 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Layout> 
-          {children}
-        </Layout>
+        <AuthProvider>
+          <Layout> 
+            {children}
+          </Layout>
+        </AuthProvider>
       </body>
     </html>
   );
