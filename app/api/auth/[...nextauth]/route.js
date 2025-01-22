@@ -19,27 +19,44 @@ export const authOptions = {
     strategy: 'jwt'
   },
   callbacks: {
+    async session ({ session, token, user }){
+      session.user.id = token.sub
+      return session
+    },
     async jwt({ token, user, account, profile, isNewUser}) {
       console.log({user, isNewUser, token})
       if (isNewUser) {
         // createNewTenant
         // TODO
         console.log('create new account')
-        const tenants = await prisma.tenant.findFirst({
+        const accounts = await prisma.tenant.findMany({
           where: {
-            userId: user.id
+            users: {
+              some: {
+                userId: user.id
+              }
+            }
           }
         })
-        console.log(tenants)
-        if(!tenants){
+
+        console.log({accounts})
+        if (!accounts === false) {
           console.log('create new tenant')
-          await prisma.tenant.create({
+          const tenant = await prisma.tenant.create({
             data: {
               name: 'Meu Tenant',
               image: '',
               slug: 'meutenant',
               plano: 'free',
+            }
+          })
+          
+          console.log('Create Users on Tenants')
+          const userOnTenant = await prisma.usersOnTenants.create({
+            data: {
               userId: user.id,
+              tenantId: tenant.id,
+              role: 'owner',
             }
           })
         }

@@ -21,7 +21,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  tenants       Tenant[]
+  tenants       UsersOnTenants[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
  
@@ -90,6 +90,16 @@ model Tenant {
   plano    String   @db.VarChar(255)
   image    String   @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamp()
-  userId   String
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  users UsersOnTenants[]
+}
+
+model UsersOnTenants  {
+  user       User     @relation(fields: [userId], references: [id])
+  userId     String 
+  Tenant     Tenant @relation(fields: [tenantId], references: [id])
+  tenantId   String
+  assignedAt DateTime @default(now())
+  role       String
+
+  @@id([userId, tenantId])
 }
