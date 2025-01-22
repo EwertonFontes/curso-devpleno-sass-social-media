@@ -91,6 +91,7 @@ model Tenant {
   image    String   @db.VarChar(255)
   createdAt DateTime @default(now()) @db.Timestamp()
   users UsersOnTenants[]
+  links  Link[]
 }
 
 model UsersOnTenants  {
@@ -102,4 +103,15 @@ model UsersOnTenants  {
   role       String
 
   @@id([userId, tenantId])
+}
+
+model Link {
+  id        String   @id @default(cuid())
+  name      String
+  publicName String
+  slug      String
+  destination String
+  createdAt DateTime @default(now())
+  tenants    Tenant @relation(fields: [tenantId], references: [id])
+  tenantId  String
 }

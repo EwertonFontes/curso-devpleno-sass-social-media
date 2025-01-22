@@ -18,7 +18,7 @@ export default function Home() {
           <li><Link href='/app'>App</Link></li>
           <li><Link href='/devpleno'>Tenant devpleno</Link></li>
         </ul>
-        <button onClick={() => signIn()}>Sign In</button>
+        <button onClick={() => signIn(null,  {callbackUrl: '/app'})}>Sign In</button>
         <p>
         Signed in as {session?.user?.email} <br />
         <button onClick={() => signOut()}>Sign out</button>

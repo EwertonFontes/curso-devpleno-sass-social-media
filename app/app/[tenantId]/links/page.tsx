@@ -5,6 +5,7 @@ import Heading2 from "components/Heading2"
 import { SubmitHandler, useForm } from "react-hook-form"
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
+import { useParams } from 'next/navigation';
 
 const linkSchema = yup.object({
     name: yup.string().required(),
@@ -12,22 +13,31 @@ const linkSchema = yup.object({
     slug: yup.string().required(),
     destination: yup.string().required(),
     appName: yup.string().required(),
-  }).required();
+}).required();
 
 interface NewLinkForm {
     name: string
     publicName: string
     slug: string
     destination: string
-    appLink: string
+    appName: string
 }
 
 const Links = () => {
+    const params = useParams()
+
     const { register, handleSubmit, formState: { errors }  } = useForm<NewLinkForm>({
         resolver: yupResolver(linkSchema)
     })
-    const submit: SubmitHandler<NewLinkForm> = (data: any) => {
-        console.log(data)
+
+    const submit: SubmitHandler<NewLinkForm> = async (inputs: any) => {
+        const data = await fetch(`/api/${params?.tenantId}/links`, {
+            method: 'POST',
+            body: JSON.stringify(inputs),
+            headers: {
+                'content-type': 'application/json'
+            }
+        })
     }
     
     return(
@@ -78,6 +88,7 @@ const Links = () => {
                         </div>
                         <div>
                         <div className=" relative ">
+                            <input type="hidden" value={params?.tenantId} />
                             <input
                             type="text"
                             id="user-info-email"
@@ -119,7 +130,7 @@ const Links = () => {
                                 type="text"
                                 className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                 placeholder="Link interno"
-                                {...register('appLink')}
+                                {...register('appName')}
                             />
                             </div>
                         </div>

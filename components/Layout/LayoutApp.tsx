@@ -1,11 +1,16 @@
 import LinkMenu from 'components/LinkMenu'
+import { useSession, signOut} from 'next-auth/react'
 import React from 'react'
+import { useParams } from 'next/navigation'
 
 interface Props {
     children: React.ReactNode
 }
 
 const LayoutApp = ({children}: Props) => {
+    const { data: session } = useSession()
+    const params = useParams()
+    const tenantId = params?.tenantId
     return (
       <main className="relative h-screen overflow-hidden bg-gray-100 dark:bg-gray-800">
         <div className="flex items-start justify-between">
@@ -16,7 +21,7 @@ const LayoutApp = ({children}: Props) => {
               </div>
               <nav className="mt-6">
                 <div>
-                  <LinkMenu href="/app">
+                  <LinkMenu href={"/app/"+tenantId}>
                     <span className="text-left">
                       <svg
                         width={20}
@@ -30,10 +35,7 @@ const LayoutApp = ({children}: Props) => {
                     </span>
                     <span className="mx-2 text-sm font-normal">Home</span>
                   </LinkMenu>
-                  <a
-                    className="flex items-center justify-start w-full p-2 pl-6 my-2 text-gray-400 transition-colors duration-200 border-l-4 border-transparent hover:text-gray-800"
-                    href="#"
-                  >
+                  <LinkMenu href={"/app/"+tenantId}>
                     <span className="text-left">
                       <svg
                         width={20}
@@ -51,8 +53,8 @@ const LayoutApp = ({children}: Props) => {
                         0
                       </span>
                     </span>
-                  </a>
-                  <LinkMenu href="/app/links">
+                  </LinkMenu>
+                  <LinkMenu href={`/app/${tenantId}/links`}>
                     <span className="text-left">
                       <svg
                         width={20}
@@ -127,15 +129,18 @@ const LayoutApp = ({children}: Props) => {
                     </svg>
                   </button>
                   <span className="w-1 h-8 bg-gray-200 rounded-lg"></span>
-                  <a href="#" className="relative block">
+                  <span className="relative block">
                     <img
-                      alt="profil"
-                      src="/images/person/1.jpg"
+                      alt={session?.user?.name}
+                      src={session?.user?.image}
                       className="mx-auto object-cover rounded-full h-10 w-10 "
                     />
-                  </a>
-                  <button className="flex items-center text-gray-500 dark:text-white text-md">
-                    Charlie R
+                  </span>
+                  <button className="flex items-center text-gray-500 dark:text-white text-md" onClick={() => {
+                    signOut({ callbackUrl: '/'})
+                  }}
+                  >
+                    {session?.user?.name}
                     <svg
                       width={20}
                       height={20}

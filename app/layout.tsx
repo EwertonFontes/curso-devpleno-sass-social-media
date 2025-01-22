@@ -7,6 +7,7 @@ import LayoutPublic from "components/Layout/LayoutPublic";
 import LayoutTenant from "components/Layout/LayoutTenant";
 import { usePathname } from 'next/navigation'
 import { AuthProvider } from "components/Providets";
+import LayoutEmpty from "components/Layout/LayoutEmpty";
 
 export default function RootLayout({
   children,
@@ -23,6 +24,9 @@ export default function RootLayout({
     Layout = LayoutTenant 
   }
 
+  if(pathname === '/app'){
+    Layout = LayoutEmpty 
+  }
   return (
     <html lang="en">
       <body>
