@@ -6,6 +6,18 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
 import type { NextApiRequest } from "next"
 
+type LinkData = {
+    id: string
+    name: string
+    slug: string
+}
+
+type LinkPaginationWrapper = {
+    cursor: string
+    take: number
+    items: LinkData[]
+}
+
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ tenantId: string }> }) {  
     const session = await getServerSession(authOptions)
@@ -40,19 +52,51 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ten
     }
 }
 
-export async function GET(req: NextApiRequest, { params }: { params: Promise<{ tenantId: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ tenantId: string }> }) {
     const session = await getServerSession(authOptions)
     if (session) {
         const tenantId = (await params).tenantId;
-    
-        const links = await prisma.link.findMany({
-            where: {
-                tenantId: {
-                    equals: tenantId
+        
+        const searchParams = req.nextUrl.searchParams
+        const cursor = searchParams.get('cursor')
+        const take = searchParams.get('take')
+        let links = []
+
+        if (cursor){
+            links = await prisma.link.findMany({
+                where: {
+                    tenantId: {
+                        equals: tenantId
+                    }
+                },
+                cursor: {
+                    id: String(cursor)
+                },
+                skip: 1,
+                take: Number(take || 10),
+                orderBy: {
+                    id: 'asc'
                 }
-            }
-        })
-        return NextResponse.json(links, { status: 200  })
+            })
+        } else {
+            links = await prisma.link.findMany({
+                where: {
+                    tenantId: {
+                        equals: tenantId
+                    }
+                },
+                take: Number(take || 10),
+                orderBy: {
+                    id: 'asc'
+                }
+            })
+        }
+        
+        return NextResponse.json({
+            cursor: cursor,
+            take: take,
+            items: links
+        }, { status: 200  })
     } else {
         return NextResponse.json('ERRORS', { status: 404 })
     }

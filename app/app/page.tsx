@@ -1,15 +1,14 @@
 'use client'
-import useSWR from 'swr'
 import { useSession } from "next-auth/react";
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useGet } from "../../hooks/api";
 
-const fetcher = (...args) => fetch(...args).then(res => res.json())
 const AppIndex = () => {
     const router = useRouter()
     const [shouldRedirect, setShouldRedirect] = useState(false)
-    const { data, error, isLoading } = useSWR('/api/tenants', fetcher)
+    const { data, error, isLoading } = useGet('/api/tenants')
     const { data: session } = useSession()
     useEffect(() =>{
         if(data && data.length === 1) {
