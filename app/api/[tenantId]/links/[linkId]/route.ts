@@ -5,20 +5,28 @@ import { getSession } from "next-auth/react"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../../../auth/[...nextauth]/route"
 import type { NextApiRequest } from "next"
+import { checkTenantPermission } from "../../../../../services/users"
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ linkId: string }> }) {  
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ linkId: string, tenantId: string }> }) {  
+    const linkId = (await params).linkId;
+    const tenantId = (await params).tenantId
     const session = await getServerSession(authOptions)
     if (session) {
-        const linkId = (await params).linkId;
-        const tenants = await prisma.tenant.findMany({
+        const tenant = await checkTenantPermission(tenantId, session.user.id)
+        if(!tenant){
+            return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+        }
+        
+        const link = await prisma.link.findFirst({
             where: {
-                users: {
-                    some: {
-                        userId: session.user.id
-                    }
-                }
+                id: linkId,
+                tenantId: tenantId
             }
         })
+        if(!link){
+            return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+        }
+
         const deletedLink = await prisma.link.delete({
             where: {
                 id: linkId

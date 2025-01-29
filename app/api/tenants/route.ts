@@ -1,5 +1,5 @@
 
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "lib/prisma"
 import { getSession } from "next-auth/react"
 import type { NextApiRequest, NextApiResponse } from "next"
@@ -12,9 +12,20 @@ type TenantData = {
     slug: string 
 }
 
-export async function GET(req: NextApiRequest, res: NextApiResponse<TenantData[]>) {    
+export async function GET(req: NextRequest) {    
     const session = await getServerSession(authOptions)
     if (session) {
+        const searchParams = req.nextUrl.searchParams
+        const slug = searchParams.get('slug')
+        if(slug){
+            const tenant = await prisma.tenant.findFirst({
+                where: {
+                    slug: slug
+                }
+            })
+            return NextResponse.json(tenant, { status: 200  })
+        }
+
         const tenants = await prisma.tenant.findMany({
             where: {
                 users: {
