@@ -68,7 +68,7 @@ const LayoutApp = ({children}: Props) => {
                     </span>
                     <span className="mx-4 text-sm font-normal">Links</span>
                   </LinkMenu>
-                  <LinkMenu href="/app/settings">
+                  <LinkMenu href={`/app/${tenantId}/settings`}>
                     <span className="text-left">
                       <svg
                         width={20}

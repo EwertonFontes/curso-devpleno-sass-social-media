@@ -6,9 +6,13 @@ import { useGet } from '../../../hooks/api';
 export default function Slug() {
     const router = useRouter()
     const params = useParams()
-    const tenant = useGet(params?.slug && `/api/tenants?slug=${params?.slug}`)
-    if (!tenant.data){
-        console.log("PAGE NOT FOUND!")
+    const slug = params?.slug
+    let tenant = null
+    if(slug.indexOf('.') < 0) {
+        tenant = useGet(params?.slug && `/api/tenants?slug=${params?.slug}`)
+        if (!tenant.data){
+            console.log("PAGE NOT FOUND!")
+        }
     }
 
     const link = useGet(params?.link && `/api/${tenant?.data?.id}/links?slug=${params?.link}`)
