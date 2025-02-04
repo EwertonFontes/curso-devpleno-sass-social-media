@@ -2,6 +2,9 @@ import LinkMenu from 'components/LinkMenu'
 import { useSession, signOut} from 'next-auth/react'
 import React from 'react'
 import { useParams } from 'next/navigation'
+import Link from "next/link"
+import { useGet } from '../../hooks/api'
+import { json } from 'stream/consumers'
 
 interface Props {
     children: React.ReactNode
@@ -11,6 +14,7 @@ const LayoutApp = ({children}: Props) => {
     const { data: session } = useSession()
     const params = useParams()
     const tenantId = params?.tenantId
+    const { data } = useGet(`/api/tenants/${tenantId}`)
     return (
       <main className="relative h-screen overflow-hidden bg-gray-100 dark:bg-gray-800">
         <div className="flex items-start justify-between">
@@ -20,6 +24,25 @@ const LayoutApp = ({children}: Props) => {
                 <p className="text-xl font-bold dark:text-white">Social Media Belt</p>
               </div>
               <nav className="mt-6">
+              {!tenantId && (
+                <div>
+                  <LinkMenu href={"/app"}>
+                    <span className="text-left">
+                      <svg
+                        width={20}
+                        height={20}
+                        fill="currentColor"
+                        viewBox="0 0 1792 1792"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path d="M1472 992v480q0 26-19 45t-45 19h-384v-384h-256v384h-384q-26 0-45-19t-19-45v-480q0-1 .5-3t.5-3l575-474 575 474q1 2 1 6zm223-69l-62 74q-8 9-21 11h-3q-13 0-21-7l-692-577-692 577q-12 8-24 7-13-2-21-11l-62-74q-8-10-7-23.5t11-21.5l719-599q32-26 76-26t76 26l244 204v-195q0-14 9-23t23-9h192q14 0 23 9t9 23v408l219 182q10 8 11 21.5t-7 23.5z"></path>
+                      </svg>
+                    </span>
+                    <span className="mx-2 text-sm font-normal">Voltar</span>
+                  </LinkMenu>
+                </div>
+                )}
+                {tenantId && (
                 <div>
                   <LinkMenu href={"/app/"+tenantId}>
                     <span className="text-left">
@@ -37,52 +60,38 @@ const LayoutApp = ({children}: Props) => {
                   </LinkMenu>
                   <LinkMenu href={"/app/"+tenantId}>
                     <span className="text-left">
-                      <svg
-                        width={20}
-                        height={20}
-                        fill="currentColor"
-                        viewBox="0 0 2048 1792"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M1070 1178l306-564h-654l-306 564h654zm722-282q0 182-71 348t-191 286-286 191-348 71-348-71-286-191-191-286-71-348 71-348 191-286 286-191 348-71 348 71 286 191 191 286 71 348z"></path>
-                      </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+</svg>
+
                     </span>
                     <span className="mx-2 text-sm font-normal">
-                      Conta: DevPleno
+                      Conta: {data?.name}
                       <span className="w-4 h-2 p-1 ml-4 text-xs text-gray-400 bg-gray-200 rounded-lg">
-                        0
+                        {data?.plano}
                       </span>
                     </span>
                   </LinkMenu>
                   <LinkMenu href={`/app/${tenantId}/links`}>
                     <span className="text-left">
-                      <svg
-                        width={20}
-                        height={20}
-                        fill="currentColor"
-                        viewBox="0 0 1792 1792"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M1728 608v704q0 92-66 158t-158 66h-1216q-92 0-158-66t-66-158v-960q0-92 66-158t158-66h320q92 0 158 66t66 158v32h672q92 0 158 66t66 158z"></path>
-                      </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+                       <path strokeLinecap="round" strokeLinejoin="round" d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m13.35-.622 1.757-1.757a4.5 4.5 0 0 0-6.364-6.364l-4.5 4.5a4.5 4.5 0 0 0 1.242 7.244" />
+                    </svg>
                     </span>
                     <span className="mx-4 text-sm font-normal">Links</span>
                   </LinkMenu>
                   <LinkMenu href={`/app/${tenantId}/settings`}>
                     <span className="text-left">
-                      <svg
-                        width={20}
-                        height={20}
-                        fill="currentColor"
-                        viewBox="0 0 2048 1792"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path d="M580 461q0-41-25-66t-66-25q-43 0-76 25.5t-33 65.5q0 39 33 64.5t76 25.5q41 0 66-24.5t25-65.5zm743 507q0-28-25.5-50t-65.5-22q-27 0-49.5 22.5t-22.5 49.5q0 28 22.5 50.5t49.5 22.5q40 0 65.5-22t25.5-51zm-236-507q0-41-24.5-66t-65.5-25q-43 0-76 25.5t-33 65.5q0 39 33 64.5t76 25.5q41 0 65.5-24.5t24.5-65.5zm635 507q0-28-26-50t-65-22q-27 0-49.5 22.5t-22.5 49.5q0 28 22.5 50.5t49.5 22.5q39 0 65-22t26-51zm-266-397q-31-4-70-4-169 0-311 77t-223.5 208.5-81.5 287.5q0 78 23 152-35 3-68 3-26 0-50-1.5t-55-6.5-44.5-7-54.5-10.5-50-10.5l-253 127 72-218q-290-203-290-490 0-169 97.5-311t264-223.5 363.5-81.5q176 0 332.5 66t262 182.5 136.5 260.5zm592 561q0 117-68.5 223.5t-185.5 193.5l55 181-199-109q-150 37-218 37-169 0-311-70.5t-223.5-191.5-81.5-264 81.5-264 223.5-191.5 311-70.5q161 0 303 70.5t227.5 192 85.5 263.5z"></path>
-                      </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.325.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.431l-1.003.827c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.955.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.431l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+  <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+</svg>
+
                     </span>
                     <span className="mx-4 text-sm font-normal">Configurações</span>
                   </LinkMenu>
                 </div>
+                )}
               </nav>
             </div>
           </div>
@@ -104,30 +113,24 @@ const LayoutApp = ({children}: Props) => {
               </div>
               <div className="relative z-20 flex flex-col justify-end h-full px-3 md:w-full">
                 <div className="relative flex items-center justify-end w-full p-1 space-x-4">
-                  <button className="flex items-center p-2 text-gray-400 bg-white rounded-full shadow hover:text-gray-700 text-md">
-                    <svg
-                      width={20}
-                      height={20}
-                      className=""
-                      fill="currentColor"
-                      viewBox="0 0 1792 1792"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M1520 1216q0-40-28-68l-208-208q-28-28-68-28-42 0-72 32 3 3 19 18.5t21.5 21.5 15 19 13 25.5 3.5 27.5q0 40-28 68t-68 28q-15 0-27.5-3.5t-25.5-13-19-15-21.5-21.5-18.5-19q-33 31-33 73 0 40 28 68l206 207q27 27 68 27 40 0 68-26l147-146q28-28 28-67zm-703-705q0-40-28-68l-206-207q-28-28-68-28-39 0-68 27l-147 146q-28 28-28 67 0 40 28 68l208 208q27 27 68 27 42 0 72-31-3-3-19-18.5t-21.5-21.5-15-19-13-25.5-3.5-27.5q0-40 28-68t68-28q15 0 27.5 3.5t25.5 13 19 15 21.5 21.5 18.5 19q33-31 33-73zm895 705q0 120-85 203l-147 146q-83 83-203 83-121 0-204-85l-206-207q-83-83-83-203 0-123 88-209l-88-88q-86 88-208 88-120 0-204-84l-208-208q-84-84-84-204t85-203l147-146q83-83 203-83 121 0 204 85l206 207q83 83 83 203 0 123-88 209l88 88q86-88 208-88 120 0 204 84l208 208q84 84 84 204z"></path>
-                    </svg>
+                  <Link href="/app">
+                  <button className="flex items-center p-2 text-gray-400 bg-white  shadow hover:text-gray-700 text-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21" />
+</svg>
+
+                    Trocar Conta
                   </button>
-                  <button className="flex items-center p-2 text-gray-400 bg-white rounded-full shadow hover:text-gray-700 text-md">
-                    <svg
-                      width={20}
-                      height={20}
-                      className="text-gray-400"
-                      fill="currentColor"
-                      viewBox="0 0 1792 1792"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path d="M912 1696q0-16-16-16-59 0-101.5-42.5t-42.5-101.5q0-16-16-16t-16 16q0 73 51.5 124.5t124.5 51.5q16 0 16-16zm816-288q0 52-38 90t-90 38h-448q0 106-75 181t-181 75-181-75-75-181h-448q-52 0-90-38t-38-90q50-42 91-88t85-119.5 74.5-158.5 50-206 19.5-260q0-152 117-282.5t307-158.5q-8-19-8-39 0-40 28-68t68-28 68 28 28 68q0 20-8 39 190 28 307 158.5t117 282.5q0 139 19.5 260t50 206 74.5 158.5 85 119.5 91 88z"></path>
-                    </svg>
+                  </Link>
+                  <Link href="/app/tenants">
+                  <button className="flex items-center p-2 text-gray-400 bg-white  shadow hover:text-gray-700 text-md">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="size-6">
+  <path strokeLinecap="round" strokeLinejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m12-3V3.75m0 9.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 3.75V16.5m-6-9V3.75m0 3.75a1.5 1.5 0 0 1 0 3m0-3a1.5 1.5 0 0 0 0 3m0 9.75V10.5" />
+</svg>
+
+                    Gerenciar Contas
                   </button>
+                  </Link>
                   <span className="w-1 h-8 bg-gray-200 rounded-lg"></span>
                   <span className="relative block">
                     <img

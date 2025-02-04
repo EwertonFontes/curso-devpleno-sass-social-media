@@ -24,3 +24,21 @@ export const save = async(id: string, tenantData: Prisma.TenantUpdateInput): Pro
     })
     return savedTenant
 }
+
+export const create = async(userId: string, tenantData: Prisma.TenantCreateInput): Promise<Tenant> => {
+    console.log('CRIANDO TENANT')
+    console.log(tenantData)
+        
+    const savedTenant = await prisma.tenant.create({
+        data: tenantData
+    })
+
+    await prisma.usersOnTenants.create({
+        data: {
+            tenantId: savedTenant.id,
+            userId: userId,
+            role: 'owner'
+        }
+    })
+    return savedTenant
+}

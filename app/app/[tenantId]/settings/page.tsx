@@ -5,7 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import { useParams,  useRouter } from 'next/navigation';
 import { post } from "lib/fetch";
-
+import { mutate } from 'swr'
 const tenantSettingsSchema = yup.object({
     name: yup.string().required(),
     slug: yup.string().required(),
@@ -29,6 +29,7 @@ const PageSettings = () => {
     const submit: SubmitHandler<TenantSettingsForm> = async (inputs: any) => {
         const data = await post({ url: `/api/${tenantId}/settings `, data: inputs })
         //router.push(`/app/${tenantId}/links`)
+        mutate(`/api/tenants/${tenantId}`)
     }
     return(
         <>
