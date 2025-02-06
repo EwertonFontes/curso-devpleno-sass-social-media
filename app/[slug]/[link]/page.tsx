@@ -20,6 +20,7 @@ export default function Slug() {
         console.log("PAGE NOT FOUND!")
     }
 
+    useGet(`/api/click/${link?.data?.id}`)
     router.push(link?.data?.destination)
     
 
