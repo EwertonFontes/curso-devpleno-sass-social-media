@@ -6,6 +6,8 @@ import * as yup from "yup";
 import { useParams,  useRouter } from 'next/navigation';
 import { post } from "lib/fetch";
 import { mutate } from 'swr'
+import { useEffect, useState } from "react";
+import { useGet } from "../../../../hooks/api";
 const tenantSettingsSchema = yup.object({
     name: yup.string().required(),
     slug: yup.string().required(),
@@ -19,10 +21,11 @@ interface TenantSettingsForm {
 const PageSettings = () => {
     const router = useRouter()
     const params = useParams()
+    const [success, setSuccess] = useState(false)
 
     const tenantId = params?.tenantId
     
-    const { register, handleSubmit, formState: { errors }  } = useForm<TenantSettingsForm>({
+    const { register, handleSubmit, setValue, formState: { errors }  } = useForm<TenantSettingsForm>({
         resolver: yupResolver(tenantSettingsSchema)
     })
 
@@ -30,9 +33,22 @@ const PageSettings = () => {
         const data = await post({ url: `/api/${tenantId}/settings `, data: inputs })
         //router.push(`/app/${tenantId}/links`)
         mutate(`/api/tenants/${tenantId}`)
+        setSuccess(true)
     }
+    const {data} = useGet(`/api/${tenantId}/settings`)
+    useEffect(() => {
+        if (data) {
+            setValue('name', data.name)
+            setValue('slug', data.slug)
+        }
+    }, [data])
     return(
         <>
+            { success && 
+                <div className="px-4 py-3 leading-normal text-blue-700 bg-blue-100 rounded-lg" role="alert">
+                    <p>Configurações salvas com sucesso!</p>
+                </div>
+            }
             <form onSubmit={handleSubmit(submit)} className="container max-w-2xl mx-auto shadow-md md:w-3/4 mt-4">
                 <div className="p-4 border-t-2 border-indigo-400 rounded-lg bg-gray-100/5 ">
                 <div className="max-w-sm mx-auto md:w-full md:mx-0">

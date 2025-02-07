@@ -116,6 +116,16 @@ export const findLinkBySlug = async(tenantId: string, slug: string) => {
     return link
 }
 
+export const findLinkById = async(tenantId: string, linkId: string) => {
+    const link = await prisma.link.findFirst({
+        where: {
+            tenantId: tenantId,
+            id: linkId
+        }
+    })
+    return link
+}
+
 export const findAnalyticsPaginated = async(
     linkId: string, 
     cursor?: string | string[], 

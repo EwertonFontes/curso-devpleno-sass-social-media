@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Prisma, Tenant } from "@prisma/client"
-import { save } from "../../../../services/tenants"
+import { findTenantById, save } from "../../../../services/tenants"
 import { checkTenantPermission } from "../../../../services/users"
 
 type LinkData = {
@@ -23,6 +23,21 @@ type LinkPaginationWrapper = {
 
 interface SessionError {
     message: string
+}
+export async function GET(req: NextRequest, { params }: { params: Promise<{ tenantId: string }> }, res: NextApiResponse<SessionError | Tenant>) {  
+    const session = await getServerSession(authOptions)
+    const tenantId = (await params).tenantId;
+    if (session) {
+        const usertenant = await checkTenantPermission(tenantId, session.user.id)
+        if(!usertenant){
+            return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+        }
+
+        const tenant = await findTenantById(tenantId)
+        return NextResponse.json(tenant, { status: 200  })
+    } else {
+        return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+    }
 }
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ tenantId: string }> }, res: NextApiResponse<SessionError | Tenant>) {  

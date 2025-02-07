@@ -150,9 +150,9 @@ const Links = () => {
                                   </span>
                                 </td>
                                 <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
-                                  <a href="#" className="inline-block mx-1 text-indigo-600 hover:text-indigo-900">
+                                  <Link href={`/app/${tenantId}/links/${link.id}/edit`} className="inline-block mx-1 text-indigo-600 hover:text-indigo-900">
                                     Edit
-                                  </a>
+                                  </Link>
                                   <button className="inline-block mx-1 text-indigo-600 hover:text-indigo-900" onClick={() => deleteLink(link.id)} >Delete</button>
                                 </td>
                               </tr>

@@ -15,6 +15,15 @@ export const findTenantBySlug = async(slug: string) => {
     return tenant
 }
 
+export const findTenantById = async(tenantId: string) => {
+    const tenant = await prisma.tenant.findFirst({
+        where: {
+            id: tenantId
+        }
+    })
+    return tenant
+}
+
 export const save = async(id: string, tenantData: Prisma.TenantUpdateInput): Promise<Tenant> => {
     const savedTenant = await prisma.tenant.update({
         where: {
