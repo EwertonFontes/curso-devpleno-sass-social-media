@@ -8,12 +8,25 @@ import * as yup from "yup";
 import { useParams,  useRouter } from 'next/navigation';
 import Link from "next/link";
 import { post } from "lib/fetch";
+import { useEffect } from "react";
 
 
 const linkSchema = yup.object({
     name: yup.string().required(),
     publicName: yup.string().required(),
-    slug: yup.string().required(),
+    slug: yup.string().required().test(
+        'is-slug-unique',
+        'Esse já foi utilizado',
+        async(value, context) => {
+            console.log('VALIDANDO SLUG')
+            const link = await fetch(`/api/${context.parent.tenantId}/links?slug=${value}`)
+            const linkData = await link.json()
+            if (linkData && linkData.id) {
+                return false
+            }
+            return true
+        }
+    ),
     destination: yup.string().required(),
     appName: yup.string().required(),
 }).required();
@@ -24,6 +37,7 @@ interface NewLinkForm {
     slug: string
     destination: string
     appName: string
+    tenantId: string
 }
 
 const CreateLink = () => {
@@ -32,7 +46,7 @@ const CreateLink = () => {
 
     const tenantId = params?.tenantId
    
-    const { register, handleSubmit, formState: { errors }  } = useForm<NewLinkForm>({
+    const { register, handleSubmit, setValue, formState: { errors }  } = useForm<NewLinkForm>({
         resolver: yupResolver(linkSchema)
     })
 
@@ -41,6 +55,9 @@ const CreateLink = () => {
         router.push(`/app/${tenantId}/links`)
     }
         
+    useEffect(( )=> {
+        setValue('tenantId', tenantId)
+    }, [params])
     return(
         <>
              <div className='grid grid-cols-1 md:grid-cols-2'>
@@ -70,6 +87,7 @@ const CreateLink = () => {
                             placeholder="Nome Interno"
                             {...register('name')}
                             />
+                            {errors?.name?.message && <p>{errors?.name?.message}</p>}
                         </div>
                         </div>
                         <div>
@@ -81,6 +99,7 @@ const CreateLink = () => {
                             placeholder="Nome publico"
                             {...register('publicName')}
                             />
+                            {errors?.publicName?.message && <p>{errors?.publicName?.message}</p>}
                         </div>
                         </div>
                         <div>
@@ -91,6 +110,7 @@ const CreateLink = () => {
                             placeholder="Identificados [Slug]"
                             {...register('slug')}
                             />
+                            {errors?.slug?.message && <p>{errors?.slug?.message}</p>}
                         </div>
                         </div>
                         </div>
@@ -107,6 +127,7 @@ const CreateLink = () => {
                                 placeholder="https://"
                                 {...register('destination')}
                             />
+                            {errors?.destination?.message && <p>{errors?.destination?.message}</p>}
                             </div>
                         </div>
                         <div>
@@ -117,6 +138,7 @@ const CreateLink = () => {
                                 placeholder="Link interno"
                                 {...register('appName')}
                             />
+                            {errors?.appName?.message && <p>{errors?.appName?.message}</p>}
                             </div>
                         </div>
                         </div>

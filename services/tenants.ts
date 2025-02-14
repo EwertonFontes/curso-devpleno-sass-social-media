@@ -4,16 +4,30 @@ import { Prisma, Tenant } from "@prisma/client"
 
 export const findTenantBySlug = async(slug: string) => {
     const tenant = await prisma.tenant.findFirst({
-        select: {
-            id: true,
-            name: true,
-        },
         where: {
             slug: slug
         }
     })
     return tenant
 }
+
+export const findTenantByDomain = async(domainName: string) => {
+    const domain = await prisma.customDomain.findFirst({
+        select: {
+            id: true,
+            domainName: true,
+            tenant: {
+                id: true,
+                name: true
+            }
+        },
+        where: {
+            domainName: domainName
+        }
+    })
+    return domain
+}
+
 
 export const findTenantById = async(tenantId: string) => {
     const tenant = await prisma.tenant.findFirst({

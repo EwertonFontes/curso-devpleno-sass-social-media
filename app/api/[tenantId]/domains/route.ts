@@ -6,8 +6,9 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Prisma } from "@prisma/client"
-import { findLinkBySlug, findPaginated,getPublicLinks,save } from "../../../../services/links"
+import { findByDomainName, save } from "../../../../services/domain"
 import { checkTenantPermission } from "../../../../services/users"
+import { findAll } from "../../../../services/domain"
 
 type LinkData = {
     id: string
@@ -36,11 +37,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ten
 
         const body = await req.json()
         
-        const linkData: Prisma.LinkCreateInput = {
-            name: String(body.name),
-            publicName: String(body.publicName),
-            slug: String(body.slug),
-            destination: String(body.destination),
+        const domainData: Prisma.CustomDomainCreateInput = {
+            domainName: String(body.domainName),
+            active: true,
             tenants: {
                 connect: {
                     id: String(tenantId)
@@ -48,39 +47,29 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ten
             }
         }
                 
-        const savedLink = await save(tenantId, linkData)
-        return NextResponse.json(savedLink, { status: 200  })
+        const savedDomain = await save(tenantId, domainData)
+        return NextResponse.json(savedDomain, { status: 200  })
     } else {
         return NextResponse.json({messge: 'No authentication'}, { status: 401  })
     }
 }
+
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ tenantId: string }> }, res: NextResponse<LinkPaginationWrapper | SessionError >) {
     const session = await getServerSession(authOptions)
     if (session) {
         const tenantId = (await params).tenantId;
         const searchParams = req.nextUrl.searchParams
-        const slug = searchParams.get('slug')
-        if(slug) {
-            const link = await findLinkBySlug(tenantId, slug)
-            if(!link) {
-                return NextResponse.json({message: 'Link not found'}, { status: 404  })
+        const domainName = searchParams.get('domainName')
+        if(domainName) {
+            const domain = await findByDomainName(tenantId, domainName)
+            if(!domain) {
+                return NextResponse.json({message: 'Domain not found'}, { status: 404  })
             }
-            return NextResponse.json(link, { status: 200  })
+            return NextResponse.json(domain, { status: 200  })
         }
-        else {
-            const cursor = searchParams.get('cursor')
-            const take = searchParams.get('take')
-
-            if (cursor) {
-                const links = await findPaginated(tenantId, cursor, take)
-                return NextResponse.json(links, { status: 200  })
-            } else {
-                const links = await getPublicLinks(tenantId)
-                return NextResponse.json(links, { status: 200  })
-            }
-            
-        }
+        const customDomains = await findAll(tenantId)
+        return NextResponse.json(customDomains, { status: 200  })
     } else {
         return NextResponse.json({messge: 'No authentication'}, { status: 401  })
     }

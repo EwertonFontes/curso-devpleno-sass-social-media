@@ -10,12 +10,24 @@ import { useEffect, useState } from "react";
 import { useGet } from "../../../../hooks/api";
 const tenantSettingsSchema = yup.object({
     name: yup.string().required(),
-    slug: yup.string().required(),
+    slug: yup.string().required().test(
+        'is-slug-unique',
+        'Esse já foi utilizado',
+        async(value, context) => {
+            const tenant = await fetch(`/api/tenants?slug=${value}`)
+            const tenantData = await tenant.json()
+            if (tenantData && tenantData.id && tenantData.id !== context.parent.id ) {
+                return false
+            }
+            return true
+        }
+    ),
 }).required();
 
 interface TenantSettingsForm {
     name: string
     slug: string
+    id: string
 }
 
 const PageSettings = () => {
@@ -40,6 +52,7 @@ const PageSettings = () => {
         if (data) {
             setValue('name', data.name)
             setValue('slug', data.slug)
+            setValue('id', String(tenantId))
         }
     }, [data])
     return(
@@ -69,6 +82,7 @@ const PageSettings = () => {
                         placeholder="Nome da Conta"
                         {...register('name')}
                         />
+                        {errors?.name?.message && <p>{errors?.name?.message}</p>}
                     </div>
                     </div>
                     <div>
@@ -79,6 +93,7 @@ const PageSettings = () => {
                         placeholder="Identificados [Slug]"
                         {...register('slug')}
                         />
+                        {errors?.slug?.message && <p>{errors?.slug?.message}</p>}
                     </div>
                     </div>
                     </div>

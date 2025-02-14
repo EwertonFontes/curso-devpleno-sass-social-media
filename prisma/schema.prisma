@@ -92,6 +92,7 @@ model Tenant {
   createdAt DateTime @default(now()) @db.Timestamp()
   users UsersOnTenants[]
   links  Link[]
+  customDomains CustomDomain[]
 }
 
 model UsersOnTenants  {
@@ -123,4 +124,13 @@ model Click {
   createdAt   DateTime @default(now())
   link     Link   @relation(fields: [linkId], references: [id])
   linkId    String
+}
+
+model CustomDomain {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  active  Boolean
+  domainName  String
+  tenants    Tenant @relation(fields: [tenantId], references: [id])
+  tenantId  String
 }

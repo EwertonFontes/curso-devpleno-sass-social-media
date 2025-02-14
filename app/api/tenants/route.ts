@@ -6,7 +6,7 @@ import type { NextApiRequest, NextApiResponse } from "next"
 import { getServerSession } from "next-auth"
 import { authOptions } from "../auth/[...nextauth]/route"
 import { Prisma, Tenant } from "@prisma/client"
-import { create } from "../../../services/tenants"
+import { create, findTenantBySlug } from "../../../services/tenants"
 
 type TenantData = {
     id: string
@@ -20,12 +20,12 @@ export async function GET(req: NextRequest) {
     if (session) {
         const searchParams = req.nextUrl.searchParams
         const slug = searchParams.get('slug')
-        if(slug){
-            const tenant = await prisma.tenant.findFirst({
-                where: {
-                    slug: slug
-                }
-            })
+
+        if(slug) {
+            const tenant = await findTenantBySlug(slug)
+            if(!tenant) {
+                return NextResponse.json({message: 'Tenant not found'}, { status: 404  })
+            }
             return NextResponse.json(tenant, { status: 200  })
         }
 

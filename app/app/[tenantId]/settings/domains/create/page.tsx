@@ -8,47 +8,52 @@ import * as yup from "yup";
 import { useParams,  useRouter } from 'next/navigation';
 import Link from "next/link";
 import { post } from "lib/fetch";
+import { useEffect } from "react";
 
 
-const tenantSchema = yup.object({
-    name: yup.string().required(),
-    slug: yup.string().required().test(
-        'is-slug-unique',
-        'Esse já foi utilizado',
+const domainNameSchema = yup.object({
+    domainName: yup.string().required().test(
+        'is-domain-unique',
+        'Esse Dominio já foi utilizado',
         async(value, context) => {
-            const tenant = await fetch(`/api/tenants?slug=${value}`)
-            const tenantData = await tenant.json()
-            if (tenantData && tenantData.id) {
+            const domain = await fetch(`/api/${context.parent.tenantId}/domains?domainName=${value}`)
+            const domainData = await domain.json()
+            if (domainData && domainData.id) {
                 return false
             }
             return true
         }
     ),
-    plano: yup.string().required()
 }).required();
 
-interface NewTenantForm {
-    name: string
-    slug: string
-    plano: string
+interface NewDomainNameForm {
+    domainName: string
+    tenantId: string
 }
 
-const CreateTenant = () => {
+const CreateDomain = () => {
     const router = useRouter()
-    const { register, handleSubmit, formState: { errors }  } = useForm<NewTenantForm>({
-        resolver: yupResolver(tenantSchema)
+    const params = useParams()
+    const tenantId = params?.tenantId
+
+    const { register, handleSubmit, setValue, formState: { errors }  } = useForm<NewDomainNameForm>({
+        resolver: yupResolver(domainNameSchema)
     })
 
-    const submit: SubmitHandler<NewTenantForm> = async (inputs: any) => {
-        const data = await post({ url: `/api/tenants`, data: inputs })
-        router.push(`/app`)
+    useEffect(() => {
+        setValue('tenantId', String(tenantId))
+    }, [params])
+
+    const submit: SubmitHandler<NewDomainNameForm> = async (inputs: any) => {
+        const data = await post({ url: `/api/${tenantId}/domains`, data: inputs })
+        router.push(`/app/${tenantId}/settings/domains`)
     }
         
     return(
         <>
              <div className='grid grid-cols-1 md:grid-cols-2'>
                 <div>
-                    <Heading1>Criar Nova Conta</Heading1>
+                    <Heading1>Criar Novo Dominio</Heading1>
                 </div>
             </div>
             <section className="h-screen bg-gray-100/50">
@@ -56,53 +61,30 @@ const CreateTenant = () => {
                     <div className="p-4 border-t-2 border-indigo-400 rounded-lg bg-gray-100/5 ">
                     <div className="max-w-sm mx-auto md:w-full md:mx-0">
                         <div className="inline-flex items-center space-x-4">
-                        <Heading2>Criar Novo Tenant</Heading2>
+                        <Heading2>Criar Dominio</Heading2>
                         </div>
                     </div>
                     </div>
                     <div className="space-y-6 bg-white">
                     <div className="items-center w-full p-4 space-y-4 text-gray-500 md:inline-flex md:space-y-0">
-                        <h2 className="max-w-sm mx-auto md:w-1/3">Identificação</h2>
+                        <h2 className="max-w-sm mx-auto md:w-1/3">Nome do Dominio</h2>
                         <div className="max-w-sm mx-auto md:w-2/3 space-y-5">
                         <div>
                         <div className=" relative ">
                             <input
                             type="text"
                             className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                            placeholder="Nome Interno"
-                            {...register('name')}
+                            placeholder="Nome de Dominio"
+                            {...register('domainName')}
                             />
-                            {errors?.name?.message && <p>{errors?.name?.message}</p>}
+                            {errors?.domainName?.message && <p>{errors?.domainName?.message}</p>}
                         </div>
                         </div>
                         <div>
                         </div>
-                        <div>
-                        <div className=" relative ">
-                            <input
-                            type="text"
-                            className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                            placeholder="Identificados [Slug]"
-                            {...register('slug')}
-                            />
-                            {errors?.slug?.message && <p>{errors?.slug?.message}</p>}
-                        </div>
-                        <div>
                         </div>
                         </div>
-                        <div>
-                        <div className=" relative ">
-                            <input
-                                type="text"
-                                className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
-                                placeholder="Plano"
-                                {...register('plano')}
-                            />
-                            {errors?.plano?.message && <p>{errors?.plano?.message}</p>}
-                        </div>
-                        </div>
-                        </div>
-                    </div>                   
+                    </div>             
                     <hr />
                     <div className="w-full px-4 pb-4 ml-auto text-gray-500 md:w-1/3">
                         <button
@@ -112,7 +94,6 @@ const CreateTenant = () => {
                         Save
                         </button>
                     </div>
-                    </div>
                 </form>
                 
             </section>
@@ -120,4 +101,4 @@ const CreateTenant = () => {
     )
 }
 
-export default CreateTenant
+export default CreateDomain

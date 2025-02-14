@@ -14,12 +14,29 @@ export interface ClickPaginationWrapper {
     prevCursor: string
 }
 
-export const save = async(linkData: Prisma.LinkCreateInput): Promise<Link> => {
-    const savedLink = await prisma.link.create({
-        data: linkData
-    })
-    return savedLink
+export const save = async(tenantId: string, linkData: Prisma.LinkCreateInput): Promise<Link | null> => {
+    const currentLink = await findLinkBySlug(tenantId, linkData.slug)
+    if(!currentLink){
+        const savedLink = await prisma.link.create({
+            data: linkData
+        })
+        return savedLink
+    }
+    return null
 }
+
+export const update = async(tenantId: string, id: string, linkData: Prisma.LinkUpdateInput): Promise<Link | null> => {
+    const currentLink = await findLinkBySlug(tenantId, linkData.slug)
+    if(!currentLink || currentLink?.id == id){
+        const savedLink = await prisma.link.update({
+            where: { id: id},
+            data: linkData
+        })
+        return savedLink
+    }
+    return null
+}
+
 export const findPaginated = async(
     tenantId: string, 
     cursor?: string | string[], 
@@ -188,4 +205,13 @@ export const findAnalyticsPaginated = async(
         nextCursor: nextClick?.id || '',
         prevCursor: prevClick?.[prevClick.length -1]?.id || ''
     }
+}
+
+export const getPublicLinks = async(tenantId: string) => {
+    const links = await prisma.link.findMany({
+        where: {
+            tenantId
+        }
+    })
+    return links
 }

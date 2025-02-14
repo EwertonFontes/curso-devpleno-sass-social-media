@@ -7,15 +7,27 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import { useParams,  useRouter } from 'next/navigation';
 import Link from "next/link";
-import { post } from "lib/fetch";
+import { patch } from "lib/fetch";
 import { useGet } from "../../../../../../hooks/api";
 import { useEffect, useState } from "react";
+import { te } from "date-fns/locale";
 
 
 const linkSchema = yup.object({
     name: yup.string().required(),
     publicName: yup.string().required(),
-    slug: yup.string().required(),
+    slug: yup.string().required().test(
+        'is-slug-unique',
+        'Esse já foi utilizado',
+        async(value, context) => {
+            const link = await fetch(`/api/${context.parent.tenantId}/links?slug=${value}`)
+            const linkData = await link.json()
+            if (linkData && linkData.id &&  linkData.id !== context.parent.id) {
+                return false
+            }
+            return true
+        }
+    ),
     destination: yup.string().required(),
     appName: yup.string().required(),
 }).required();
@@ -26,6 +38,8 @@ interface NewLinkForm {
     slug: string
     destination: string
     appName: string
+    tenantId: string
+    id: string
 }
 
 const EditLink = () => {
@@ -34,19 +48,24 @@ const EditLink = () => {
     const [success, setSuccess] = useState(false)
     const tenantId = params?.tenantId
     const linkId = params?.linkId
-   
+    const [isSlugValid, setIsSlugValid] = useState(false)
+    const [isValidating, setIsValidating] = useState(false)
+
     const { register, handleSubmit, setValue, formState: { errors }  } = useForm<NewLinkForm>({
         resolver: yupResolver(linkSchema)
     })
 
     const submit: SubmitHandler<NewLinkForm> = async (inputs: any) => {
-        const data = await post({ url: `/api/${tenantId}/links`, data: inputs })
+        const data = await patch({ url: `/api/${tenantId}/links/${linkId}`, data: inputs })
         setSuccess(true)
         router.push(`/app/${tenantId}/links`)
     }
+
     const {data} = useGet(`/api/${tenantId}/links/${linkId}`)
     useEffect(() => {
         if (data) {
+            setValue('tenantId', String(tenantId))
+            setValue('id', String(linkId))
             setValue('name', data.name)
             setValue('slug', data.slug)
             setValue('publicName', data.publicName)
@@ -87,6 +106,7 @@ const EditLink = () => {
                             placeholder="Nome Interno"
                             {...register('name')}
                             />
+                            {errors?.name?.message && <p>{errors?.name?.message}</p>}
                         </div>
                         </div>
                         <div>
@@ -98,6 +118,7 @@ const EditLink = () => {
                             placeholder="Nome publico"
                             {...register('publicName')}
                             />
+                            {errors?.publicName?.message && <p>{errors?.publicName?.message}</p>}
                         </div>
                         </div>
                         <div>
@@ -108,6 +129,7 @@ const EditLink = () => {
                             placeholder="Identificados [Slug]"
                             {...register('slug')}
                             />
+                            {errors?.slug?.message && <p>{errors?.slug?.message}</p>}
                         </div>
                         </div>
                         </div>
@@ -123,7 +145,9 @@ const EditLink = () => {
                                 className=" rounded-lg border-transparent flex-1 appearance-none border border-gray-300 w-full py-2 px-4 bg-white text-gray-700 placeholder-gray-400 shadow-sm text-base focus:outline-none focus:ring-2 focus:ring-purple-600 focus:border-transparent"
                                 placeholder="https://"
                                 {...register('destination')}
+                                
                             />
+                            {errors?.destination?.message && <p>{errors?.destination?.message}</p>}
                             </div>
                         </div>
                         <div>
@@ -134,6 +158,7 @@ const EditLink = () => {
                                 placeholder="Link interno"
                                 {...register('appName')}
                             />
+                            {errors?.appName?.message && <p>{errors?.appName?.message}</p>}
                             </div>
                         </div>
                         </div>

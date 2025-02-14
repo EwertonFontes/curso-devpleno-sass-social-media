@@ -8,7 +8,6 @@ interface Props {
 const LayoutPublic = ({ children }: Props) => {
     return (
         <>
-            <h1>Tenant Publico</h1>
             {children}
         </>
     )

@@ -17,6 +17,18 @@ export const post = async({ url, data }: IPost) => {
     return res.json()
 }
 
+export const patch = async({ url, data }: IPost) => {
+    const res = await fetch(url, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+        headers: {
+            'content-type': 'application/json',
+            'accept': 'application/json'
+        }
+    })
+    return res.json()
+}
+
 interface IDelete{
     url: string
 }
