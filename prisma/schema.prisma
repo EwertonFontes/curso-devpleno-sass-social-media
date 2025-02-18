@@ -93,6 +93,7 @@ model Tenant {
   users UsersOnTenants[]
   links  Link[]
   customDomains CustomDomain[]
+  campaigns Campaign[]
 }
 
 model UsersOnTenants  {
@@ -116,6 +117,32 @@ model Link {
   tenants    Tenant @relation(fields: [tenantId], references: [id])
   tenantId  String
   clicks Click[]
+  linkGroups LinkGroup[]
+  liksOnPublicPage LinkOnPublicPage[]
+}
+
+model LinkGroup {
+  id        String   @id @default(cuid())
+  name String
+  link     Link   @relation(fields: [linkId], references: [id])
+  linkId    String
+}
+
+model Campaign {
+  id        String   @id @default(cuid())
+  name String
+  active Boolean @default(false)
+  tenants    Tenant @relation(fields: [tenantId], references: [id])
+  tenantId  String
+  urlParams Json
+}
+
+model LinkOnPublicPage {
+  id        String   @id @default(cuid())
+  order Int
+  highlight Boolean @default(false)
+  link Link @relation(fields: [linkId], references: [id])
+  linkId    String
 }
 
 model Click {
