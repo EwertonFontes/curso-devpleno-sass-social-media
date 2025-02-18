@@ -5,7 +5,7 @@ import { link } from "fs"
 
 
 export const save = async(tenantId: string, domainData: Prisma.CustomDomainCreateInput): Promise<CustomDomain | null> => {
-    const currentDomain = await findByDomainName(tenantId, domainData.domainName)
+    const currentDomain = await findByDomainName(domainData.domainName)
     if(!currentDomain){
         const savedDomain = await prisma.customDomain.create({
             data: domainData
@@ -15,32 +15,45 @@ export const save = async(tenantId: string, domainData: Prisma.CustomDomainCreat
     return null
 }
 
-/*
-export const update = async(tenantId: string, id: string, linkData: Prisma.LinkUpdateInput): Promise<Link | null> => {
-    const currentLink = await findLinkBySlug(tenantId, linkData.slug)
-    if(!currentLink || currentLink?.id == id){
-        const savedLink = await prisma.link.update({
-            where: { id: id},
-            data: linkData
+
+export const update = async(tenantId: string, id: string, domainData: Prisma.CustomDomainUpdateInput): Promise<CustomDomain | null> => {
+    const currentDomain = await findByDomainName(String(domainData.domainName))
+    if(!currentDomain || currentDomain?.id == id){
+        const savedDomain = await prisma.customDomain.update({
+            where: { 
+                id: id,
+                tenantId
+            },
+            data: domainData
         })
-        return savedLink
+        return savedDomain
     }
     return null
 }
-*/
 
-export const findByDomainName = async(tenantId: string, domainName: string) => {
+
+export const findByDomainName = async(domainName: string) => {
     const domain = await prisma.customDomain.findFirst({
         select: {
             id: true,
             domainName: true
         },
         where: {
-            tenantId: tenantId,
             domainName
         }
     })
     return domain
+}
+
+
+export const findDomainById = async(tenantId: string, domainId: string) => {
+    const link = await prisma.customDomain.findFirst({
+        where: {
+            tenantId: tenantId,
+            id: domainId
+        }
+    })
+    return link
 }
 
 export const findAll = async(

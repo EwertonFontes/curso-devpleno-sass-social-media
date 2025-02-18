@@ -19,10 +19,10 @@ const CustomDomains = () => {
     const tenantId = params?.tenantId
     const { data, mutate } = useGet(params?.tenantId && `/api/${tenantId}/domains`)
 
-    /*const deleteLink = async (id: string) => {
-      await deleteEntity({url: `/api/${tenantId}/links/${id}`})
+    const deleteDomain = async (id: string) => {
+      await deleteEntity({url: `/api/${tenantId}/domains/${id}`})
       await mutate()
-    }*/
+    }
     
     return(
         <>
@@ -115,10 +115,10 @@ const CustomDomains = () => {
                                   </span>
                                 </td>
                                 <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
-                                  <Link href={`/app/${tenantId}/settings/domains/edit`} className="inline-block mx-1 text-indigo-600 hover:text-indigo-900">
+                                  <Link href={`/app/${tenantId}/settings/domains/${customDomain.id}/edit`} className="inline-block mx-1 text-indigo-600 hover:text-indigo-900">
                                     Edit
                                   </Link>
-                                  <button className="inline-block mx-1 text-indigo-600 hover:text-indigo-900" onClick={() => deleteLink(customDomain.id)} >Delete</button>
+                                  <button className="inline-block mx-1 text-indigo-600 hover:text-indigo-900" onClick={() => deleteDomain(customDomain.id)} >Delete</button>
                                 </td>
                               </tr>
                               ))}

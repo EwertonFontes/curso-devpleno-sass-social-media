@@ -8,6 +8,7 @@ import { post } from "lib/fetch";
 import { mutate } from 'swr'
 import { useEffect, useState } from "react";
 import { useGet } from "../../../../hooks/api";
+import Link from "next/link";
 const tenantSettingsSchema = yup.object({
     name: yup.string().required(),
     slug: yup.string().required().test(
@@ -62,6 +63,16 @@ const PageSettings = () => {
                     <p>Configurações salvas com sucesso!</p>
                 </div>
             }
+            <div className='flex items-center'>
+                <Link href={`/app/${tenantId}/settings/domains`}>
+                    <button
+                        type="button"
+                        className="w-full px-4 py-2 text-base font-medium text-black bg-white border-t border-b border-l rounded-l-md hover:bg-gray-100"
+                    >
+                        Dominios
+                    </button>
+                </Link>
+            </div>
             <form onSubmit={handleSubmit(submit)} className="container max-w-2xl mx-auto shadow-md md:w-3/4 mt-4">
                 <div className="p-4 border-t-2 border-indigo-400 rounded-lg bg-gray-100/5 ">
                 <div className="max-w-sm mx-auto md:w-full md:mx-0">
@@ -69,6 +80,7 @@ const PageSettings = () => {
                     <Heading2>Configurações da Conta</Heading2>
                     </div>
                 </div>
+                
                 </div>
                 <div className="space-y-6 bg-white">
                 <div className="items-center w-full p-4 space-y-4 text-gray-500 md:inline-flex md:space-y-0">

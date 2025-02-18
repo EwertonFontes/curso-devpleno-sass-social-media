@@ -74,3 +74,35 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tena
         return NextResponse.json({messge: 'No authentication'}, { status: 401  })
     }
 }
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ domainId: string, tenantId: string }> }) {  
+    const domainId = (await params).domainId;
+    const tenantId = (await params).tenantId
+    const session = await getServerSession(authOptions)
+    if (session) {
+        const tenant = await checkTenantPermission(tenantId, session.user.id)
+        if(!tenant){
+            return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+        }
+        
+        const domain = await prisma.link.findFirst({
+            where: {
+                id: domainId,
+                tenantId: tenantId
+            }
+        })
+        if(!domain){
+            return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+        }
+
+        const deletedDomain = await prisma.customDomain.delete({
+            where: {
+                id: domainId
+            } 
+        })
+        return NextResponse.json(deletedDomain, { status: 200  })
+    } else {
+        return NextResponse.json('ERRORS', { status: 404 })
+    }
+}
+
