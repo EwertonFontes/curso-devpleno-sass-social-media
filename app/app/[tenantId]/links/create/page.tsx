@@ -2,13 +2,15 @@
 
 import Heading1 from "components/Heading1"
 import Heading2 from "components/Heading2"
-import { SubmitHandler, useForm } from "react-hook-form"
+import { SubmitHandler, useForm, Controller } from "react-hook-form"
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import { useParams,  useRouter } from 'next/navigation';
 import Link from "next/link";
 import { post } from "lib/fetch";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import AsyncCreatableSelect from "react-select/async-creatable";
+import { fields } from "@hookform/resolvers/ajv/src/__tests__/__fixtures__/data.js";
 
 
 const linkSchema = yup.object({
@@ -31,6 +33,12 @@ const linkSchema = yup.object({
     appName: yup.string().required(),
 }).required();
 
+interface GroupOption {
+    label: string;
+    value: string;
+    _isNew__?: boolean
+}
+
 interface NewLinkForm {
     name: string
     publicName: string
@@ -38,15 +46,16 @@ interface NewLinkForm {
     destination: string
     appName: string
     tenantId: string
+    groups: GroupOption[]
 }
+
 
 const CreateLink = () => {
     const router = useRouter()
     const params = useParams()
-
     const tenantId = params?.tenantId
    
-    const { register, handleSubmit, setValue, formState: { errors }  } = useForm<NewLinkForm>({
+    const { register, handleSubmit, setValue, control, watch, formState: { errors }  } = useForm<NewLinkForm>({
         resolver: yupResolver(linkSchema)
     })
 
@@ -54,7 +63,21 @@ const CreateLink = () => {
         const data = await post({ url: `/api/${tenantId}/links`, data: inputs })
         router.push(`/app/${tenantId}/links`)
     }
-        
+    
+    const getOptions = async (inputValue: string) => {
+        if(inputValue && inputValue.length > 2) {
+            const data = await fetch(`/api/${tenantId}/groups?name=`+inputValue)
+            const json = await data.json()
+            return json.map((item) => ({
+                value: item.id,
+                label: item.name
+            }))
+        }
+        return []
+    }
+
+
+    console.log(watch('groups'))
     useEffect(( )=> {
         setValue('tenantId', tenantId)
     }, [params])
@@ -99,6 +122,21 @@ const CreateLink = () => {
                             placeholder="Nome publico"
                             {...register('publicName')}
                             />
+                            {errors?.publicName?.message && <p>{errors?.publicName?.message}</p>}
+                        </div>
+                        </div>
+                        <div>
+                        <div className=" relative ">
+                            <Controller name='groups' control={control} render={({field}) => (
+                                <AsyncCreatableSelect
+                                {...field}
+                                cacheOptions
+                                defaultOptions
+                                isClearable
+                                isMulti
+                                loadOptions={getOptions}
+                                />
+                            )} />
                             {errors?.publicName?.message && <p>{errors?.publicName?.message}</p>}
                         </div>
                         </div>

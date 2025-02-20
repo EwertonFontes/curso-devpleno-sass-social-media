@@ -14,12 +14,42 @@ export interface ClickPaginationWrapper {
     prevCursor: string
 }
 
-export const save = async(tenantId: string, linkData: Prisma.LinkCreateInput): Promise<Link | null> => {
+interface Group {
+    value: string
+    label: string
+    __isNew__?: boolean
+}
+
+interface WithGroups {
+    groups: Group[]
+}
+
+export type NewLinkForm = Prisma.LinkCreateInput & WithGroups
+
+export const save = async(tenantId: string, linkData: NewLinkForm): Promise<Link | null> => {
     const currentLink = await findLinkBySlug(tenantId, linkData.slug)
     if(!currentLink){
+        const { groups, ...data} = linkData
+        const groupsToConnect = groups.filter(group => !group.__isNew__).map(group => ({
+            id: group.value
+        }))
+        const groupsToCreate = groups.filter(group => group.__isNew__).map(group => ({
+            name: group.label 
+        }))
+        console.log('CRIAR GRUPOS')
+        console.log(groups)
+        console.log(groupsToCreate)
         const savedLink = await prisma.link.create({
-            data: linkData
+            data: {
+                ...data,
+                groups: {
+                    connect:  groupsToConnect,
+                    create: groupsToCreate
+                }
+            }
         })
+
+
         return savedLink
     }
     return null

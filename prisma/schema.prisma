@@ -117,15 +117,14 @@ model Link {
   tenants    Tenant @relation(fields: [tenantId], references: [id])
   tenantId  String
   clicks Click[]
-  linkGroups LinkGroup[]
+  groups LinkGroup[]
   liksOnPublicPage LinkOnPublicPage[]
 }
 
 model LinkGroup {
   id        String   @id @default(cuid())
   name String
-  link     Link   @relation(fields: [linkId], references: [id])
-  linkId    String
+  links Link[]
 }
 
 model Campaign {
