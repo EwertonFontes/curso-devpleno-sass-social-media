@@ -4,7 +4,7 @@ import { SubmitHandler, useForm } from "react-hook-form"
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from "yup";
 import { useParams,  useRouter } from 'next/navigation';
-import { post } from "lib/fetch";
+import { patch, post } from "lib/fetch";
 import { mutate } from 'swr'
 import { useEffect, useState } from "react";
 import { useGet } from "../../../../hooks/api";
@@ -48,7 +48,7 @@ const PublicPageSettings  = () => {
         mutate(`/api/tenants/${tenantId}`)
         setSuccess(true)
     }
-    const {data} = useGet(`/api/${tenantId}/public-page`)
+    const {data, mutate} = useGet(`/api/${tenantId}/public-page`)
     useEffect(() => {
         /*
         if (data) {
@@ -57,6 +57,26 @@ const PublicPageSettings  = () => {
             setValue('id', String(tenantId))
         }*/
     }, [data])
+    const setNewOrder = (id1: string, order1: string, id2: string, order2: string) => async() => {
+        console.log('botao clicado')
+        await patch({
+            url: `/api/${tenantId}/items-on-public-page/${id1}`, 
+            data: {
+                id: id1,
+                order: order1
+            }
+            
+        })
+
+        await patch({
+            url: `/api/${tenantId}/items-on-public-page/${id2}`, 
+            data: {
+                id: id2,
+                order: order2
+            }
+        })
+        await mutate()
+    }
     return(
         <>
             { success && 
@@ -112,9 +132,16 @@ const PublicPageSettings  = () => {
                 </div>
                 </div>
             </form>
-            <div>{data?.map(item => {
+            <div>{data?.map((item, index) => {
+                const prev = data?.[index-1]
+                const next = data?.[index+1]
+                console.log(index)
                 return (
-                    <div key={item.id} className="my-2 shadow rounded p-4 hover:bg-white">{item.link.publicName}</div>
+                    <div key={item.id} className="my-2 shadow rounded p-4 hover:bg-white">
+                        {item.link.publicName} - {item.order} - {item.id}
+                        { index > 0 && <button className="bg-gray-200 p-4 rounded" onClick={setNewOrder(item.id, prev.order, prev.id, item.order)}>Up</button> }
+                        { index < data?.length - 1 && <button className="bg-gray-200 p-4 rounded" onClick={setNewOrder(item.id, next.order, next.id, item.order)}>Down</button> }
+                    </div>
                 )
             })}</div>
         </>
