@@ -72,8 +72,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tena
         else {
             const cursor = searchParams.get('cursor')
             const take = searchParams.get('take')
-
-            if (cursor) {
+            const paginated = searchParams.get('paginated')
+            if (cursor || paginated) {
+                console.log('CURSOR  LINKS')
                 const links = await findPaginated(tenantId, cursor, take)
                 return NextResponse.json(links, { status: 200  })
             } else {

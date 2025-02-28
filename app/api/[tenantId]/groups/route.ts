@@ -6,9 +6,9 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Prisma } from "@prisma/client"
-import { findLinkBySlug, findPaginated,getPublicLinks } from "../../../../services/links"
+import { findLinkBySlug, getPublicLinks } from "../../../../services/links"
 import { checkTenantPermission } from "../../../../services/users"
-import { findLinkGroupByName, save } from "../../../../services/linkGroups"
+import { findLinkGroupByName, save, findPaginated} from "../../../../services/linkGroups"
 
 type LinkData = {
     id: string
@@ -36,7 +36,6 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ ten
         }
 
         const body = await req.json()
-        console.log('SALVARRR GROUP')
         const linkGroupData: Prisma.LinkGroupCreateInput = {
             name: String(body.name),
         }
@@ -62,17 +61,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tena
             return NextResponse.json(linkGroup, { status: 200  })
         }
         else {
-            const cursor = searchParams.get('cursor')
-            const take = searchParams.get('take')
+            const cursor = searchParams.get('cursor') || ''
+            const take = searchParams.get('take') || ''
 
-            if (cursor) {
-                const links = await findPaginated(tenantId, cursor, take)
-                return NextResponse.json(links, { status: 200  })
-            } else {
-                const links = await getPublicLinks(tenantId)
-                return NextResponse.json(links, { status: 200  })
-            }
-            
+            const groups = await findPaginated(tenantId, cursor, take)
+            return NextResponse.json(groups, { status: 200  })            
         }
     } else {
         return NextResponse.json({messge: 'No authentication'}, { status: 401  })

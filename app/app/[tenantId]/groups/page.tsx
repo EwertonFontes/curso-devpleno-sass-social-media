@@ -11,29 +11,28 @@ import { deleteEntity, post } from '../../../../lib/fetch'
 import Alert from "components/Alert";
 import Link from "next/link";
 import { useEffect } from "react";
-import TooglePublicPage from "components/TooglePublicPage";
 
-const Links = () => {
+const LinkGroups = () => {
     const router = useRouter()
     const params = useParams()
     const searchParams = useSearchParams()
     const cursorOnQuery = searchParams.get('cursor')
     const tenantId = params?.tenantId
-    const cursor = cursorOnQuery ? '?paginated=1&cursor='+cursorOnQuery : '?paginated=1'
-    const { data, mutate } = useGet(params?.tenantId && `/api/${tenantId}/links${cursor}`)
+    const cursor = cursorOnQuery ? '?cursor='+cursorOnQuery : ''
+    const { data, mutate } = useGet(params?.tenantId && `/api/${tenantId}/groups${cursor}`)
 
     useEffect(() => {
       if (data && searchParams) {
           if (searchParams.get('cursor')){
             if(data.items.length === 0) {
-              router.push(`/app/${tenantId}/links`)
+              router.push(`/app/${tenantId}/groups`)
             }
           }
       }
     }, [data, searchParams])
 
-    const deleteLink = async (id: string) => {
-      await deleteEntity({url: `/api/${tenantId}/links/${id}`})
+    const deleteGroup = async (id: string) => {
+      await deleteEntity({url: `/api/${tenantId}/groups/${id}`})
       await mutate()
     }
     
@@ -41,30 +40,21 @@ const Links = () => {
         <>
              <div className='grid grid-cols-1 md:grid-cols-2'>
                 <div>
-                    <Heading1>Gerenciador de Links</Heading1>
-                    <Heading2>Gerenciador de Links</Heading2>
+                    <Heading1>Gerenciador de Grupos de Link</Heading1>
                 </div>
                 <div className='flex items-center'>
-                    <Link href={`/app/${tenantId}/links/create`}>
+                    <Link href={`/app/${tenantId}/groups`}>
                       <button
                           type="button"
                           className="w-full px-4 py-2 text-base font-medium text-black bg-white border-t border-b border-l rounded-l-md hover:bg-gray-100"
                       >
-                          Criar Link
+                          Gerenciar Links
                       </button>
-                    </Link>
-                    <Link href={`/app/${tenantId}/groups`}>
-                    <button
-                        type="button"
-                        className="w-full px-4 py-2 text-base font-medium text-black bg-white border hover:bg-gray-100"
-                    >
-                        Gerenciar Grupos
-                    </button>
                     </Link>
                 </div>
             </div>
             <section className="h-screen bg-gray-100/50">
-                { data && data?.items?.length === 0 && <Alert>Nenhum link cadastrado</Alert> }
+                { data && data?.items?.length === 0 && <Alert>Nenhum grupo cadastrado</Alert> }
                 { data && data?.items?.length > 0 && (
                 <div className="container max-w-3xl px-4 mx-auto sm:px-8">
                     <div className="py-8">
@@ -103,62 +93,26 @@ const Links = () => {
                                 <th
                                   scope="col"
                                   className="px-5 py-3 text-sm font-normal text-left text-gray-800 uppercase bg-white border-b border-gray-200"
-                                >
-                                  clicks
-                                </th>
-                                <th
-                                  scope="col"
-                                  className="px-5 py-3 text-sm font-normal text-left text-gray-800 uppercase bg-white border-b border-gray-200"
-                                >
-                                  status
-                                </th>
-                                <th
-                                  scope="col"
-                                  className="px-5 py-3 text-sm font-normal text-left text-gray-800 uppercase bg-white border-b border-gray-200"
                                 ></th>
                               </tr>
                             </thead>
                             <tbody>
-                              {data && data?.items?.map(link =>(
+                              {data && data?.items?.map(group =>(
                               <tr>
                                 <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
                                   <div className="flex items-center">
                                     <div className="ml-3">
                                       <p className="text-gray-900 whitespace-no-wrap">
-                                        {link.name} - <span className="text-xs text-gray-500">{link.publicName}</span>
-                                        <br />
-                                        <span className="text-xs text-gray-500">{link.destination}</span>
+                                        {group.name}
                                       </p>
                                     </div>
                                   </div>
                                 </td>
                                 <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
-                                  <span className="relative inline-block px-3 py-1 font-semibold leading-tight text-green-900">
-                                    <span
-                                      aria-hidden="true"
-                                      className="absolute inset-0 bg-green-200 rounded-full opacity-50"
-                                    ></span>
-                                    <Link href={`/app/${tenantId}/links/${link.id}/analytics`}>
-                                      <span className="relative">{link.clicks}</span>
-                                    </Link>
-                                  </span>
-                                </td>
-                                <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
-                                <div>
-                                    <TooglePublicPage 
-                                    linkId={link.id} 
-                                    tenantId={tenantId}
-                                    linkOnPage={link?.liksOnPublicPage?.[0]?.id} 
-                                  
-                                  />
-
-                                </div>
-                                </td>
-                                <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
-                                  <Link href={`/app/${tenantId}/links/${link.id}/edit`} className="inline-block mx-1 text-indigo-600 hover:text-indigo-900">
+                                  <Link href={`/app/${tenantId}/groups/${group.id}/edit`} className="inline-block mx-1 text-indigo-600 hover:text-indigo-900">
                                     Edit
                                   </Link>
-                                  <button className="inline-block mx-1 text-indigo-600 hover:text-indigo-900" onClick={() => deleteLink(link.id)} >Delete</button>
+                                  <button className="inline-block mx-1 text-indigo-600 hover:text-indigo-900" onClick={() => deleteGroup(group.id)} >Delete</button>
                                 </td>
                               </tr>
                               ))}
@@ -166,7 +120,7 @@ const Links = () => {
                           </table>
                           <div className="flex flex-col items-center px-5 py-5 bg-white xs:flex-row xs:justify-between">
                             <div className="flex items-center">
-                              <Link href={`/app/${tenantId}/links?cursor=${data?.prevCursor }`}>
+                              <Link href={`/app/${tenantId}/groups?cursor=${data?.prevCursor }`}>
                                 <button
                                   type="button"
                                   className="w-full p-4 text-base text-gray-600 bg-white border rounded-l-xl hover:bg-gray-100"
@@ -183,7 +137,7 @@ const Links = () => {
                                   </svg>
                                 </button>
                               </Link>
-                              <Link href={`/app/${tenantId}/links?cursor=${data?.nextCursor}`}>
+                              <Link href={`/app/${tenantId}/groups?cursor=${data?.nextCursor}`}>
                                 <button
                                   type="button"
                                   className="w-full p-4 text-base text-gray-600 bg-white border-t border-b border-r rounded-r-xl hover:bg-gray-100"
@@ -212,4 +166,4 @@ const Links = () => {
     )
 }
 
-export default Links
+export default LinkGroups

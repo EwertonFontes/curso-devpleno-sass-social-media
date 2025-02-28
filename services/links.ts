@@ -34,11 +34,9 @@ export const save = async(tenantId: string, linkData: NewLinkForm): Promise<Link
             id: group.value
         }))
         const groupsToCreate = groups.filter(group => group.__isNew__).map(group => ({
-            name: group.label 
+            name: group.label,
+            tenantId
         }))
-        console.log('CRIAR GRUPOS')
-        console.log(groups)
-        console.log(groupsToCreate)
         const savedLink = await prisma.link.create({
             data: {
                 ...data,
@@ -83,6 +81,9 @@ export const findPaginated = async(
         take: takeNumber,
         orderBy: {
             id: 'asc'
+        },
+        include: {
+            liksOnPublicPage: true
         }
     }
     if(cursor){
@@ -243,5 +244,16 @@ export const getPublicLinks = async(tenantId: string) => {
             tenantId
         }
     })
-    return links
+    const linksOnPublicPage = await prisma.linkOnPublicPage.findMany({
+        include: {
+            link: true
+        },
+        where: {
+            tenantId
+        },
+        orderBy: {
+            order: 'asc'
+        }
+    })
+    return linksOnPublicPage
 }
