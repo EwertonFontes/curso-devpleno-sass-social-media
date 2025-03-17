@@ -146,8 +146,8 @@ model LinkOnPublicPage {
   highlight Boolean @default(false)
   itemType String @default("link")
   itemValue String
-  link Link @relation(fields: [linkId], references: [id])
-  linkId    String
+  link Link? @relation(fields: [linkId], references: [id])
+  linkId    String?
   tenant Tenant @relation(fields: [tenantId], references: [id])
   tenantId String
 

@@ -23,7 +23,10 @@ const TenantHome = () => {
         </Head>
         <div className="max-w-xl mx-auto pt-4">
             <h1 className="text-center font-bold text-4xl">{tenant?.data?.name}</h1>
-            {links?.data?.map(({ link }) => {
+            {links?.data?.map(({ link, ...item }) => {
+                if(!link) {
+                    return <h3 className='text-2xl font-bold text-center'>{item.itemValue}</h3>
+                }
                 return <a href={link.destination} className="transition-all inline-block text-center items-center w-full px-4 py-2 text-base font-medium text-black bg-white border rounded-md hover:bg-gray-100">{link.publicName}</a>
             })}
             <hr />

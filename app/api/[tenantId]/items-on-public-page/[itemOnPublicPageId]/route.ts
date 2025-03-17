@@ -21,17 +21,63 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ li
         
         const body = await req.json()
         const id = body?.id
-        const order = body?.order
+        
+        let data = null
+        if(body?.order) {
+            const order = body?.order as number
+            await prisma.linkOnPublicPage.update({
+                data: {order: order},
+                where: {
+                    id
+                }
+            })
+        }
 
-        await prisma.linkOnPublicPage.update({
-            data: {
-                order: Number(order)
-            },
+        if(body?.highlight) {
+            const highlight = body?.highlight as boolean
+            await prisma.linkOnPublicPage.update({
+                data: {highlight: highlight},
+                where: {
+                    id
+                }
+            })
+        }
+
+        
+        return NextResponse.json([{'message': 'ok'}], { status: 200  })        
+    } else {
+        return NextResponse.json('ERRORS', { status: 404 })
+    }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ itemOnPublicPageId: string, tenantId: string }> }) {  
+    const id = (await params).itemOnPublicPageId
+    const tenantId = (await params).tenantId
+    const session = await getServerSession(authOptions)
+    if (session) {
+        const tenant = await checkTenantPermission(tenantId, session.user.id)
+        if(!tenant){
+            return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+        }
+        
+
+        const currentItem = await prisma.linkOnPublicPage.findFirst({
             where: {
-                id
+                id,
+                tenantId
             }
         })
-        return NextResponse.json([{'message': 'ok'}], { status: 200  })        
+
+        if (!currentItem) {
+            return NextResponse.json({messge: 'No authentication'}, { status: 401  })
+        }
+
+        const deleted = await prisma.linkOnPublicPage.delete({
+            where: {
+                id
+            } 
+        })
+        return NextResponse.json(deleted, { status: 200  })
     } else {
         return NextResponse.json('ERRORS', { status: 404 })
     }
