@@ -13,6 +13,89 @@ import Link from "next/link";
 import { useEffect } from "react";
 import TooglePublicPage from "components/TooglePublicPage";
 
+import { Button, Dialog, DialogPanel, DialogTitle } from '@headlessui/react'
+import { useState } from 'react'
+import ToogleFavorite from "components/ToogleFavorite";
+
+function CampaignModal({tenantId, url}) {
+  let [isOpen, setIsOpen] = useState(false)
+  const [selectedCampaign, setSelectedCampaign] = useState('')
+  const [selectedUtmSource, setSelectedUtmSource] = useState('')
+  const [selectedUtmMedium, setSelectedUtmMedium] = useState('')
+
+  const { data } = useGet(`/api/${tenantId}/campaigns`)
+
+  
+  function open() {
+    setIsOpen(true)
+  }
+
+  function close() {
+    setIsOpen(false)
+  }
+
+  const copyUrlToClipboard = async() => {
+    navigator.clipboard.writeText(url+'?utm_source='+selectedUtmSource)
+  }
+
+  return (
+    <>
+      <Button
+        onClick={open}
+        className="rounded-md bg-black/20 py-2 px-4 text-sm font-medium text-white focus:outline-none data-[hover]:bg-black/30 data-[focus]:outline-1 data-[focus]:outline-white"
+      >
+        Open dialog {url}
+      </Button>
+
+      <Dialog open={isOpen} as="div" className="relative z-10 focus:outline-none" onClose={close}>
+        <div className="fixed inset-0 z-10 w-screen overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <DialogPanel
+              transition
+              className="w-full max-w-md rounded-xl bg-white p-6 backdrop-blur-2xl duration-300 ease-out data-[closed]:transform-[scale(95%)] data-[closed]:opacity-0"
+            >
+              <DialogTitle as="h3" className="text-base/7 font-medium text-black">
+                Selecione uma Campanha
+              </DialogTitle>
+              { selectedCampaign === ''  && (
+                <p className="mt-2 text-sm/6 text-black/50">
+                  Selecione a Campanha {selectedCampaign} {selectedUtmSource}
+                  {data && data.items && data.items.map(campaign => {
+                      return (
+                        <button onClick={() => setSelectedCampaign(campaign.id)}>{campaign.name}</button>
+                      )
+                  })}
+                </p> )}
+              { selectedCampaign !== '' && (
+                <p className="mt-2 text-sm/6 text-black/50">
+                  <p>{selectedCampaign}</p>
+                Selecione o source:
+                {data && data.items && data.items.filter(i => i.id === selectedCampaign)
+                ?.urlParams?.campaignSource.map(source => {
+                  console.log(source)
+                   return (
+                     <button onClick={() => setSelectedUtmSource(source)}>{source}</button>
+                   )
+                })}
+             </p>
+              )}
+              <button onClick={copyUrlToClipboard()}>Copy Link</button>
+              <div className="mt-4">
+                <Button
+                  className="inline-flex items-center gap-2 rounded-md bg-gray-700 py-1.5 px-3 text-sm/6 font-semibold text-white shadow-inner shadow-white/10 focus:outline-none data-[hover]:bg-gray-600 data-[focus]:outline-1 data-[focus]:outline-white data-[open]:bg-gray-700"
+                  onClick={close}
+                >
+                  Got it, thanks!
+                </Button>
+              </div>
+            </DialogPanel>
+          </div>
+        </div>
+      </Dialog>
+    </>
+  )
+}
+
 const Links = () => {
     const router = useRouter()
     const params = useParams()
@@ -21,7 +104,7 @@ const Links = () => {
     const tenantId = params?.tenantId
     const cursor = cursorOnQuery ? '?paginated=1&cursor='+cursorOnQuery : '?paginated=1'
     const { data, mutate } = useGet(params?.tenantId && `/api/${tenantId}/links${cursor}`)
-
+    const [selectedUrl, setSelectedUrl] = useState('')
     useEffect(() => {
       if (data && searchParams) {
           if (searchParams.get('cursor')){
@@ -36,6 +119,8 @@ const Links = () => {
       await deleteEntity({url: `/api/${tenantId}/links/${id}`})
       await mutate()
     }
+
+    const setUrl =(url: string) => () => setSelectedUrl(url)
     
     return(
         <>
@@ -45,6 +130,7 @@ const Links = () => {
                     <Heading2>Gerenciador de Links</Heading2>
                 </div>
                 <div className='flex items-center'>
+                    <CampaignModal tenantId={tenantId} url={selectedUrl} />
                     <Link href={`/app/${tenantId}/links/create`}>
                       <button
                           type="button"
@@ -125,6 +211,7 @@ const Links = () => {
                                   <div className="flex items-center">
                                     <div className="ml-3">
                                       <p className="text-gray-900 whitespace-no-wrap">
+                                        <ToogleFavorite linkId={link.id} tenantId={tenantId} isFavorite={link.favorite} />
                                         {link.name} - <span className="text-xs text-gray-500">{link.publicName}</span>
                                         <br />
                                         <span className="text-xs text-gray-500">{link.destination}</span>
@@ -155,6 +242,7 @@ const Links = () => {
                                 </div>
                                 </td>
                                 <td className="px-5 py-5 text-sm bg-white border-b border-gray-200">
+                                  <button onClick={setUrl(link.destination)}>Copy</button>
                                   <Link href={`/app/${tenantId}/links/${link.id}/edit`} className="inline-block mx-1 text-indigo-600 hover:text-indigo-900">
                                     Edit
                                   </Link>

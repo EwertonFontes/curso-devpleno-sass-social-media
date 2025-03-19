@@ -6,7 +6,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "../../auth/[...nextauth]/route"
 import type { NextApiRequest, NextApiResponse } from "next"
 import { Prisma } from "@prisma/client"
-import { findLinkBySlug, findPaginated,getPublicLinks,NewLinkForm,save } from "../../../../services/links"
+import { findLinkBySlug, findPaginated,getFavoriteLinks,getPublicLinks,NewLinkForm,save } from "../../../../services/links"
 import { checkTenantPermission } from "../../../../services/users"
 
 type LinkData = {
@@ -73,10 +73,18 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ tena
             const cursor = searchParams.get('cursor')
             const take = searchParams.get('take')
             const paginated = searchParams.get('paginated')
+            const favorite = searchParams.get('favorite')
+
+            if (favorite) {
+                const links = await getFavoriteLinks(tenantId)
+                return NextResponse.json(links, { status: 200  })
+            }
+            
             if (cursor || paginated) {
                 console.log('CURSOR  LINKS')
                 const links = await findPaginated(tenantId, cursor, take)
                 return NextResponse.json(links, { status: 200  })
+            
             } else {
                 const links = await getPublicLinks(tenantId)
                 return NextResponse.json(links, { status: 200  })

@@ -115,6 +115,7 @@ model Link {
   publicName String
   slug      String
   destination String
+  favorite   Boolean @default(false)
   createdAt DateTime @default(now())
   tenants    Tenant @relation(fields: [tenantId], references: [id])
   tenantId  String

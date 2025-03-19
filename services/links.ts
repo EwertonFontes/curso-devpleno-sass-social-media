@@ -257,3 +257,14 @@ export const getPublicLinks = async(tenantId: string) => {
     })
     return linksOnPublicPage
 }
+
+export const getFavoriteLinks = async(tenantId: string) => {
+    const links = await prisma.link.findMany({
+        where: {
+            favorite: true,
+            tenantId
+        }
+    })
+    
+    return links
+}
